@@ -24,3 +24,9 @@ variable "static_web_app_name" {
   type        = string
   default     = "stapp-blog-prod"
 }
+
+variable "domain_name" {
+  description = "The custom domain name"
+  type        = string
+  default     = "iberafun.es"
+}

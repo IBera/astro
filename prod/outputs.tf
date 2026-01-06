@@ -18,3 +18,8 @@ output "static_web_app_api_key" {
   value       = azurerm_static_web_app.swa.api_key
   sensitive   = true
 }
+
+output "dns_name_servers" {
+  description = "The name servers of the DNS Zone"
+  value       = azurerm_dns_zone.dns.name_servers
+}
