@@ -52,6 +52,49 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			.last-updated-on {
 				font-style: italic;
 			}
+			/* Styled Copy Button CSS */
+			:global(.code-block-wrapper) {
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 8px;
+				margin-bottom: 2em;
+				overflow: hidden;
+			}
+			:global(.code-block-header) {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 0.5rem 1rem;
+				background-color: rgb(var(--gray-light));
+				border-bottom: 1px solid rgb(var(--gray-light));
+				font-size: 0.9rem;
+				font-weight: bold;
+				color: rgb(var(--gray-dark));
+			}
+			:global(.code-block-header .language-label) {
+				text-transform: capitalize;
+			}
+			:global(.copy-button) {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				background: white;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				padding: 0.2rem 0.6rem;
+				font-size: 0.8rem;
+				cursor: pointer;
+				color: rgb(var(--gray-dark));
+				transition: all 0.2s;
+			}
+			:global(.copy-button:hover) {
+				background-color: #f0f0f0;
+			}
+			:global(.code-block-wrapper pre) {
+				margin: 0 !important;
+				border-top-left-radius: 0 !important;
+				border-top-right-radius: 0 !important;
+				border: none !important;
+			}
 		</style>
 	</head>
 
@@ -82,5 +125,88 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			</article>
 		</main>
 		<Footer />
+		<script>
+			const copyButtonLabel = "Copiar";
+			const codeBlocks = Array.from(document.querySelectorAll("pre"));
+
+			for (let codeBlock of codeBlocks) {
+				// Don't wrap if already wrapped (prevents duplicates on re-renders if any)
+				if (codeBlock.parentNode?.classList.contains("code-block-wrapper")) continue;
+
+				// Create wrapper
+				let wrapper = document.createElement("div");
+				wrapper.className = "code-block-wrapper";
+
+				// Create header
+				let header = document.createElement("div");
+				header.className = "code-block-header";
+
+				// Determine language
+				let language = "Code";
+				let code = codeBlock.querySelector("code");
+				
+				// Check pre dataset first (Astro often adds data-language)
+				if (codeBlock.dataset.language) {
+					language = codeBlock.dataset.language;
+				} 
+				// Fallback to class on code or pre
+				else if (code) {
+					code.classList.forEach(cls => {
+						if (cls.startsWith("language-")) {
+							language = cls.replace("language-", "");
+						}
+					});
+				}
+				if (language === "Code") {
+                     // Last resort check classes on pre
+                     codeBlock.classList.forEach(cls => {
+                        if (cls.startsWith("language-")) {
+                            language = cls.replace("language-", "");
+                        }
+                     });
+                }
+
+				// Create label
+				let label = document.createElement("span");
+				label.className = "language-label";
+				label.innerText = language;
+
+				// Create button
+				let copyButton = document.createElement("button");
+				copyButton.className = "copy-button";
+				copyButton.innerHTML = `
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+					${copyButtonLabel}
+				`;
+
+				// Assemble
+				header.appendChild(label);
+				header.appendChild(copyButton);
+				
+				// Insert wrapper before pre
+				if (codeBlock.parentNode) {
+					codeBlock.parentNode.insertBefore(wrapper, codeBlock);
+					
+					// Move pre inside wrapper
+					wrapper.appendChild(header);
+					wrapper.appendChild(codeBlock);
+				}
+
+				// Event listener
+				copyButton.addEventListener("click", async () => {
+					if (code) {
+						let text = code.innerText;
+						await navigator.clipboard.writeText(text);
+						copyButton.innerText = "¡Copiado!";
+						setTimeout(() => {
+							copyButton.innerHTML = `
+								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+								${copyButtonLabel}
+							`;
+						}, 2000);
+					}
+				});
+			}
+		</script>
 	</body>
 </html>
