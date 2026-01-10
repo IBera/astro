@@ -1,7 +1,7 @@
 ---
 title: "Automating Alert Suppression During Azure VM Maintenance Windows"
 description: "How to build a serverless solution that automatically suppresses Azure Monitor alerts during scheduled maintenance using Event Grid, Azure Functions, and Alert Processing Rules."
-pubDate: "2024-01-10"
+pubDate: "2026-01-10"
 ---
 
 
